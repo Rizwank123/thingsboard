@@ -114,7 +114,8 @@ public class ProtoUtils {
     static {
         int arraySize = Arrays.stream(EntityType.values()).mapToInt(EntityType::getProtoNumber).max().orElse(0);
         entityTypeByProtoNumber = new EntityType[arraySize + 1];
-        Arrays.stream(EntityType.values()).forEach(entityType -> entityTypeByProtoNumber[entityType.getProtoNumber()] = entityType);
+        Arrays.stream(EntityType.values())
+                .forEach(entityType -> entityTypeByProtoNumber[entityType.getProtoNumber()] = entityType);
     }
 
     public static TransportProtos.ComponentLifecycleMsgProto toProto(ComponentLifecycleMsg msg) {
@@ -147,7 +148,8 @@ public class ProtoUtils {
     }
 
     public static ComponentLifecycleMsg fromProto(TransportProtos.ComponentLifecycleMsgProto proto) {
-        EntityId entityId = EntityIdFactory.getByTypeAndUuid(fromProto(proto.getEntityType()), new UUID(proto.getEntityIdMSB(), proto.getEntityIdLSB()));
+        EntityId entityId = EntityIdFactory.getByTypeAndUuid(fromProto(proto.getEntityType()),
+                new UUID(proto.getEntityIdMSB(), proto.getEntityIdLSB()));
         var builder = ComponentLifecycleMsg.builder()
                 .tenantId(TenantId.fromUUID(new UUID(proto.getTenantIdMSB(), proto.getTenantIdLSB())))
                 .entityId(entityId)
@@ -159,12 +161,16 @@ public class ProtoUtils {
             builder.oldName(proto.getOldName());
         }
         if (proto.getProfileIdMSB() != 0 || proto.getProfileIdLSB() != 0) {
-            var profileType = EntityType.DEVICE.equals(entityId.getEntityType()) ? EntityType.DEVICE_PROFILE : EntityType.ASSET_PROFILE;
-            builder.profileId(EntityIdFactory.getByTypeAndUuid(profileType, new UUID(proto.getProfileIdMSB(), proto.getProfileIdLSB())));
+            var profileType = EntityType.DEVICE.equals(entityId.getEntityType()) ? EntityType.DEVICE_PROFILE
+                    : EntityType.ASSET_PROFILE;
+            builder.profileId(EntityIdFactory.getByTypeAndUuid(profileType,
+                    new UUID(proto.getProfileIdMSB(), proto.getProfileIdLSB())));
         }
         if (proto.getOldProfileIdMSB() != 0 || proto.getOldProfileIdLSB() != 0) {
-            var profileType = EntityType.DEVICE.equals(entityId.getEntityType()) ? EntityType.DEVICE_PROFILE : EntityType.ASSET_PROFILE;
-            builder.oldProfileId(EntityIdFactory.getByTypeAndUuid(profileType, new UUID(proto.getOldProfileIdMSB(), proto.getOldProfileIdLSB())));
+            var profileType = EntityType.DEVICE.equals(entityId.getEntityType()) ? EntityType.DEVICE_PROFILE
+                    : EntityType.ASSET_PROFILE;
+            builder.oldProfileId(EntityIdFactory.getByTypeAndUuid(profileType,
+                    new UUID(proto.getOldProfileIdMSB(), proto.getOldProfileIdLSB())));
         }
         return builder.build();
     }
@@ -190,8 +196,7 @@ public class ProtoUtils {
                 new UUID(proto.getRequestIdMSB(), proto.getRequestIdLSB()),
                 TenantId.fromUUID(new UUID(proto.getTenantIdMSB(), proto.getTenantIdLSB())),
                 EdgeId.fromUUID(new UUID(proto.getEdgeIdMSB(), proto.getEdgeIdLSB())),
-                proto.getServiceId()
-        );
+                proto.getServiceId());
     }
 
     public static TransportProtos.FromEdgeSyncResponseMsgProto toProto(FromEdgeSyncResponse response) {
@@ -213,8 +218,7 @@ public class ProtoUtils {
                 TenantId.fromUUID(new UUID(proto.getTenantIdMSB(), proto.getTenantIdLSB())),
                 EdgeId.fromUUID(new UUID(proto.getEdgeIdMSB(), proto.getEdgeIdLSB())),
                 proto.getSuccess(),
-                proto.getError()
-        );
+                proto.getError());
     }
 
     public static TransportProtos.EdgeEventMsgProto toProto(EdgeEvent edgeEvent) {
@@ -294,14 +298,15 @@ public class ProtoUtils {
 
         EntityId entityId = null;
         if (proto.hasEntityIdMSB() && proto.hasEntityIdLSB()) {
-            entityId = EntityIdFactory.getByEdgeEventTypeAndUuid(type, new UUID(proto.getEntityIdMSB(), proto.getEntityIdLSB()));
+            entityId = EntityIdFactory.getByEdgeEventTypeAndUuid(type,
+                    new UUID(proto.getEntityIdMSB(), proto.getEntityIdLSB()));
         }
 
         return new EdgeHighPriorityMsg(
                 TenantId.fromUUID(new UUID(proto.getTenantIdMSB(), proto.getTenantIdLSB())),
-                EdgeUtils.constructEdgeEvent(TenantId.fromUUID(new UUID(proto.getTenantIdMSB(), proto.getTenantIdLSB())),
-                        edgeId, type, actionType, entityId, body)
-        );
+                EdgeUtils.constructEdgeEvent(
+                        TenantId.fromUUID(new UUID(proto.getTenantIdMSB(), proto.getTenantIdLSB())),
+                        edgeId, type, actionType, entityId, body));
     }
 
     public static TransportProtos.EdgeEventUpdateMsgProto toProto(EdgeEventUpdateMsg msg) {
@@ -316,8 +321,7 @@ public class ProtoUtils {
     public static EdgeEventUpdateMsg fromProto(TransportProtos.EdgeEventUpdateMsgProto proto) {
         return new EdgeEventUpdateMsg(
                 TenantId.fromUUID(new UUID(proto.getTenantIdMSB(), proto.getTenantIdLSB())),
-                EdgeId.fromUUID(new UUID(proto.getEdgeIdMSB(), proto.getEdgeIdLSB()))
-        );
+                EdgeId.fromUUID(new UUID(proto.getEdgeIdMSB(), proto.getEdgeIdLSB())));
     }
 
     private static TransportProtos.DeviceEdgeUpdateMsgProto toProto(DeviceEdgeUpdateMsg msg) {
@@ -362,12 +366,12 @@ public class ProtoUtils {
                 TenantId.fromUUID(new UUID(proto.getTenantIdMSB(), proto.getTenantIdLSB())),
                 new DeviceId(new UUID(proto.getDeviceIdMSB(), proto.getDeviceIdLSB())),
                 proto.getDeviceName(),
-                proto.getDeviceType()
-        );
+                proto.getDeviceType());
     }
 
     private static TransportProtos.DeviceAttributesEventMsgProto toProto(DeviceAttributesEventNotificationMsg msg) {
-        TransportProtos.DeviceAttributesEventMsgProto.Builder builder = TransportProtos.DeviceAttributesEventMsgProto.newBuilder();
+        TransportProtos.DeviceAttributesEventMsgProto.Builder builder = TransportProtos.DeviceAttributesEventMsgProto
+                .newBuilder();
         builder.setTenantIdMSB(msg.getTenantId().getId().getMostSignificantBits())
                 .setTenantIdLSB(msg.getTenantId().getId().getLeastSignificantBits())
                 .setDeviceIdMSB(msg.getDeviceId().getId().getMostSignificantBits())
@@ -474,16 +478,17 @@ public class ProtoUtils {
                 getAttributeKeySetFromProto(proto.getDeletedKeysList()),
                 proto.hasScope() ? proto.getScope().name() : null,
                 getAttributesKvEntryFromProto(proto.getValuesList()),
-                proto.getDeleted()
-        );
+                proto.getDeleted());
     }
 
     private static TransportProtos.DeviceCredentialsUpdateMsgProto toProto(DeviceCredentialsUpdateNotificationMsg msg) {
-        TransportProtos.DeviceCredentialsProto.Builder protoBuilder = TransportProtos.DeviceCredentialsProto.newBuilder()
+        TransportProtos.DeviceCredentialsProto.Builder protoBuilder = TransportProtos.DeviceCredentialsProto
+                .newBuilder()
                 .setDeviceIdMSB(msg.getDeviceCredentials().getDeviceId().getId().getMostSignificantBits())
                 .setDeviceIdLSB(msg.getDeviceCredentials().getDeviceId().getId().getLeastSignificantBits())
                 .setCredentialsId(msg.getDeviceCredentials().getCredentialsId())
-                .setCredentialsType(TransportProtos.CredentialsType.valueOf(msg.getDeviceCredentials().getCredentialsType().name()));
+                .setCredentialsType(TransportProtos.CredentialsType
+                        .valueOf(msg.getDeviceCredentials().getCredentialsType().name()));
 
         if (msg.getDeviceCredentials().getCredentialsValue() != null) {
             protoBuilder.setCredentialsValue(msg.getDeviceCredentials().getCredentialsValue());
@@ -500,15 +505,18 @@ public class ProtoUtils {
 
     private static ToDeviceActorNotificationMsg fromProto(TransportProtos.DeviceCredentialsUpdateMsgProto proto) {
         DeviceCredentials deviceCredentials = new DeviceCredentials();
-        deviceCredentials.setDeviceId(new DeviceId(new UUID(proto.getDeviceCredentials().getDeviceIdMSB(), proto.getDeviceCredentials().getDeviceIdLSB())));
+        deviceCredentials.setDeviceId(new DeviceId(new UUID(proto.getDeviceCredentials().getDeviceIdMSB(),
+                proto.getDeviceCredentials().getDeviceIdLSB())));
         deviceCredentials.setCredentialsId(proto.getDeviceCredentials().getCredentialsId());
-        deviceCredentials.setCredentialsValue(proto.getDeviceCredentials().hasCredentialsValue() ? proto.getDeviceCredentials().getCredentialsValue() : null);
-        deviceCredentials.setCredentialsType(DeviceCredentialsType.valueOf(proto.getDeviceCredentials().getCredentialsType().name()));
+        deviceCredentials.setCredentialsValue(
+                proto.getDeviceCredentials().hasCredentialsValue() ? proto.getDeviceCredentials().getCredentialsValue()
+                        : null);
+        deviceCredentials.setCredentialsType(
+                DeviceCredentialsType.valueOf(proto.getDeviceCredentials().getCredentialsType().name()));
         return new DeviceCredentialsUpdateNotificationMsg(
                 TenantId.fromUUID(new UUID(proto.getTenantIdMSB(), proto.getTenantIdLSB())),
                 new DeviceId(new UUID(proto.getDeviceIdMSB(), proto.getDeviceIdLSB())),
-                deviceCredentials
-        );
+                deviceCredentials);
     }
 
     private static TransportProtos.ToDeviceRpcRequestActorMsgProto toProto(ToDeviceRpcRequestActorMsg msg) {
@@ -546,7 +554,8 @@ public class ProtoUtils {
     }
 
     private static TransportProtos.FromDeviceRpcResponseActorMsgProto toProto(FromDeviceRpcResponseActorMsg msg) {
-        TransportProtos.FromDeviceRPCResponseProto.Builder builder = TransportProtos.FromDeviceRPCResponseProto.newBuilder()
+        TransportProtos.FromDeviceRPCResponseProto.Builder builder = TransportProtos.FromDeviceRPCResponseProto
+                .newBuilder()
                 .setRequestIdMSB(msg.getMsg().getId().getMostSignificantBits())
                 .setRequestIdLSB(msg.getMsg().getId().getLeastSignificantBits())
                 .setError(msg.getMsg().getError().isPresent() ? msg.getMsg().getError().get().ordinal() : -1);
@@ -573,8 +582,7 @@ public class ProtoUtils {
                 proto.getRequestId(),
                 TenantId.fromUUID(new UUID(proto.getTenantIdMSB(), proto.getTenantIdLSB())),
                 new DeviceId(new UUID(proto.getDeviceIdMSB(), proto.getDeviceIdLSB())),
-                fromDeviceRpcResponse
-        );
+                fromDeviceRpcResponse);
     }
 
     private static TransportProtos.RemoveRpcActorMsgProto toProto(RemoveRpcActorMsg msg) {
@@ -592,8 +600,7 @@ public class ProtoUtils {
         return new RemoveRpcActorMsg(
                 TenantId.fromUUID(new UUID(proto.getTenantIdMSB(), proto.getTenantIdLSB())),
                 new DeviceId(new UUID(proto.getDeviceIdMSB(), proto.getDeviceIdLSB())),
-                new UUID(proto.getRequestIdMSB(), proto.getRequestIdLSB())
-        );
+                new UUID(proto.getRequestIdMSB(), proto.getRequestIdLSB()));
     }
 
     private static TransportProtos.DeviceDeleteMsgProto toProto(DeviceDeleteMsg msg) {
@@ -620,16 +627,20 @@ public class ProtoUtils {
             return TransportProtos.ToDeviceActorNotificationMsgProto.newBuilder().setDeviceNameOrTypeMsg(proto).build();
         } else if (msg instanceof DeviceAttributesEventNotificationMsg updateMsg) {
             TransportProtos.DeviceAttributesEventMsgProto proto = toProto(updateMsg);
-            return TransportProtos.ToDeviceActorNotificationMsgProto.newBuilder().setDeviceAttributesEventMsg(proto).build();
+            return TransportProtos.ToDeviceActorNotificationMsgProto.newBuilder().setDeviceAttributesEventMsg(proto)
+                    .build();
         } else if (msg instanceof DeviceCredentialsUpdateNotificationMsg updateMsg) {
             TransportProtos.DeviceCredentialsUpdateMsgProto proto = toProto(updateMsg);
-            return TransportProtos.ToDeviceActorNotificationMsgProto.newBuilder().setDeviceCredentialsUpdateMsg(proto).build();
+            return TransportProtos.ToDeviceActorNotificationMsgProto.newBuilder().setDeviceCredentialsUpdateMsg(proto)
+                    .build();
         } else if (msg instanceof ToDeviceRpcRequestActorMsg updateMsg) {
             TransportProtos.ToDeviceRpcRequestActorMsgProto proto = toProto(updateMsg);
-            return TransportProtos.ToDeviceActorNotificationMsgProto.newBuilder().setToDeviceRpcRequestMsg(proto).build();
+            return TransportProtos.ToDeviceActorNotificationMsgProto.newBuilder().setToDeviceRpcRequestMsg(proto)
+                    .build();
         } else if (msg instanceof FromDeviceRpcResponseActorMsg updateMsg) {
             TransportProtos.FromDeviceRpcResponseActorMsgProto proto = toProto(updateMsg);
-            return TransportProtos.ToDeviceActorNotificationMsgProto.newBuilder().setFromDeviceRpcResponseMsg(proto).build();
+            return TransportProtos.ToDeviceActorNotificationMsgProto.newBuilder().setFromDeviceRpcResponseMsg(proto)
+                    .build();
         } else if (msg instanceof RemoveRpcActorMsg updateMsg) {
             TransportProtos.RemoveRpcActorMsgProto proto = toProto(updateMsg);
             return TransportProtos.ToDeviceActorNotificationMsgProto.newBuilder().setRemoveRpcActorMsg(proto).build();
@@ -670,7 +681,8 @@ public class ProtoUtils {
                 .collect(Collectors.toSet());
     }
 
-    private static List<AttributeKvEntry> getAttributesKvEntryFromProto(List<TransportProtos.AttributeValueProto> valuesList) {
+    private static List<AttributeKvEntry> getAttributesKvEntryFromProto(
+            List<TransportProtos.AttributeValueProto> valuesList) {
         if (valuesList.isEmpty()) {
             return null;
         }
@@ -834,7 +846,8 @@ public class ProtoUtils {
         device.setTenantId(getEntityId(proto.getTenantIdMSB(), proto.getTenantIdLSB(), TenantId::new));
         device.setName(proto.getDeviceName());
         device.setType(proto.getDeviceType());
-        device.setDeviceProfileId(getEntityId(proto.getDeviceProfileIdMSB(), proto.getDeviceProfileIdLSB(), DeviceProfileId::new));
+        device.setDeviceProfileId(
+                getEntityId(proto.getDeviceProfileIdMSB(), proto.getDeviceProfileIdLSB(), DeviceProfileId::new));
         if (proto.hasCustomerIdMSB() && proto.hasCustomerIdLSB()) {
             device.setCustomerId(getEntityId(proto.getCustomerIdMSB(), proto.getCustomerIdLSB(), CustomerId::new));
         }
@@ -921,7 +934,8 @@ public class ProtoUtils {
     }
 
     public static DeviceProfile fromProto(TransportProtos.DeviceProfileProto proto) {
-        DeviceProfile deviceProfile = new DeviceProfile(getEntityId(proto.getDeviceProfileIdMSB(), proto.getDeviceProfileIdLSB(), DeviceProfileId::new));
+        DeviceProfile deviceProfile = new DeviceProfile(
+                getEntityId(proto.getDeviceProfileIdMSB(), proto.getDeviceProfileIdLSB(), DeviceProfileId::new));
         deviceProfile.setCreatedTime(proto.getCreatedTime());
         deviceProfile.setTenantId(getEntityId(proto.getTenantIdMSB(), proto.getTenantIdLSB(), TenantId::new));
         deviceProfile.setName(proto.getName());
@@ -939,10 +953,12 @@ public class ProtoUtils {
             deviceProfile.setImage(proto.getImage());
         }
         if (proto.hasDefaultRuleChainIdMSB() && proto.hasDefaultRuleChainIdLSB()) {
-            deviceProfile.setDefaultRuleChainId(getEntityId(proto.getDefaultRuleChainIdMSB(), proto.getDefaultRuleChainIdLSB(), RuleChainId::new));
+            deviceProfile.setDefaultRuleChainId(
+                    getEntityId(proto.getDefaultRuleChainIdMSB(), proto.getDefaultRuleChainIdLSB(), RuleChainId::new));
         }
         if (proto.hasDefaultDashboardIdMSB() && proto.hasDefaultDashboardIdLSB()) {
-            deviceProfile.setDefaultDashboardId(getEntityId(proto.getDefaultDashboardIdMSB(), proto.getDefaultDashboardIdLSB(), DashboardId::new));
+            deviceProfile.setDefaultDashboardId(
+                    getEntityId(proto.getDefaultDashboardIdMSB(), proto.getDefaultDashboardIdLSB(), DashboardId::new));
         }
         if (proto.hasDefaultQueueName()) {
             deviceProfile.setDefaultQueueName(proto.getDefaultQueueName());
@@ -951,16 +967,20 @@ public class ProtoUtils {
             deviceProfile.setProvisionDeviceKey(proto.getProvisionDeviceKey());
         }
         if (proto.hasFirmwareIdMSB() && proto.hasFirmwareIdLSB()) {
-            deviceProfile.setFirmwareId(getEntityId(proto.getFirmwareIdMSB(), proto.getFirmwareIdLSB(), OtaPackageId::new));
+            deviceProfile
+                    .setFirmwareId(getEntityId(proto.getFirmwareIdMSB(), proto.getFirmwareIdLSB(), OtaPackageId::new));
         }
         if (proto.hasSoftwareIdMSB() && proto.hasSoftwareIdLSB()) {
-            deviceProfile.setSoftwareId(getEntityId(proto.getSoftwareIdMSB(), proto.getSoftwareIdLSB(), OtaPackageId::new));
+            deviceProfile
+                    .setSoftwareId(getEntityId(proto.getSoftwareIdMSB(), proto.getSoftwareIdLSB(), OtaPackageId::new));
         }
         if (proto.hasExternalIdMSB() && proto.hasExternalIdLSB()) {
-            deviceProfile.setExternalId(getEntityId(proto.getExternalIdMSB(), proto.getExternalIdLSB(), DeviceProfileId::new));
+            deviceProfile.setExternalId(
+                    getEntityId(proto.getExternalIdMSB(), proto.getExternalIdLSB(), DeviceProfileId::new));
         }
         if (proto.hasDefaultEdgeRuleChainIdMSB() && proto.hasDefaultEdgeRuleChainIdLSB()) {
-            deviceProfile.setDefaultEdgeRuleChainId(getEntityId(proto.getDefaultEdgeRuleChainIdMSB(), proto.getDefaultEdgeRuleChainIdLSB(), RuleChainId::new));
+            deviceProfile.setDefaultEdgeRuleChainId(getEntityId(proto.getDefaultEdgeRuleChainIdMSB(),
+                    proto.getDefaultEdgeRuleChainIdLSB(), RuleChainId::new));
         }
         if (proto.hasVersion()) {
             deviceProfile.setVersion(proto.getVersion());
@@ -1016,7 +1036,8 @@ public class ProtoUtils {
     public static Tenant fromProto(TransportProtos.TenantProto proto) {
         Tenant tenant = new Tenant(getEntityId(proto.getTenantIdMSB(), proto.getTenantIdLSB(), TenantId::new));
         tenant.setCreatedTime(proto.getCreatedTime());
-        tenant.setTenantProfileId(getEntityId(proto.getTenantProfileIdMSB(), proto.getTenantProfileIdLSB(), TenantProfileId::new));
+        tenant.setTenantProfileId(
+                getEntityId(proto.getTenantProfileIdMSB(), proto.getTenantProfileIdLSB(), TenantProfileId::new));
         tenant.setTitle(proto.getTitle());
 
         if (proto.hasRegion()) {
@@ -1074,7 +1095,8 @@ public class ProtoUtils {
     }
 
     public static TenantProfile fromProto(TransportProtos.TenantProfileProto proto) {
-        TenantProfile tenantProfile = new TenantProfile(getEntityId(proto.getTenantProfileIdMSB(), proto.getTenantProfileIdLSB(), TenantProfileId::new));
+        TenantProfile tenantProfile = new TenantProfile(
+                getEntityId(proto.getTenantProfileIdMSB(), proto.getTenantProfileIdLSB(), TenantProfileId::new));
         tenantProfile.setCreatedTime(proto.getCreatedTime());
         tenantProfile.setName(proto.getName());
         tenantProfile.setDefault(proto.getIsDefault());
@@ -1127,7 +1149,8 @@ public class ProtoUtils {
     }
 
     public static TbResource fromProto(TransportProtos.TbResourceProto proto) {
-        TbResource resource = new TbResource(getEntityId(proto.getResourceIdMSB(), proto.getResourceIdLSB(), TbResourceId::new));
+        TbResource resource = new TbResource(
+                getEntityId(proto.getResourceIdMSB(), proto.getResourceIdLSB(), TbResourceId::new));
         resource.setTenantId(getEntityId(proto.getTenantIdMSB(), proto.getTenantIdLSB(), TenantId::new));
         resource.setCreatedTime(proto.getCreatedTime());
         resource.setTitle(proto.getTitle());
@@ -1183,10 +1206,13 @@ public class ProtoUtils {
     }
 
     public static ApiUsageState fromProto(TransportProtos.ApiUsageStateProto proto) {
-        ApiUsageState apiUsageState = new ApiUsageState(getEntityId(proto.getApiUsageStateIdMSB(), proto.getApiUsageStateIdLSB(), ApiUsageStateId::new));
-        apiUsageState.setTenantId(getEntityId(proto.getTenantProfileIdMSB(), proto.getTenantProfileIdLSB(), TenantId::new));
+        ApiUsageState apiUsageState = new ApiUsageState(
+                getEntityId(proto.getApiUsageStateIdMSB(), proto.getApiUsageStateIdLSB(), ApiUsageStateId::new));
+        apiUsageState
+                .setTenantId(getEntityId(proto.getTenantProfileIdMSB(), proto.getTenantProfileIdLSB(), TenantId::new));
         apiUsageState.setCreatedTime(proto.getCreatedTime());
-        apiUsageState.setEntityId(EntityIdFactory.getByTypeAndUuid(fromProto(proto.getEntityType()), new UUID(proto.getEntityIdMSB(), proto.getEntityIdLSB())));
+        apiUsageState.setEntityId(EntityIdFactory.getByTypeAndUuid(fromProto(proto.getEntityType()),
+                new UUID(proto.getEntityIdMSB(), proto.getEntityIdLSB())));
         apiUsageState.setTransportState(ApiUsageStateValue.valueOf(proto.getTransportState()));
         apiUsageState.setDbStorageState(ApiUsageStateValue.valueOf(proto.getDbStorageState()));
         apiUsageState.setReExecState(ApiUsageStateValue.valueOf(proto.getReExecState()));
@@ -1264,7 +1290,8 @@ public class ProtoUtils {
                 .setDeviceIdMSB(getMsb(deviceCredentials.getDeviceId()))
                 .setDeviceIdLSB(getLsb(deviceCredentials.getDeviceId()))
                 .setCredentialsId(deviceCredentials.getCredentialsId())
-                .setCredentialsType(TransportProtos.CredentialsType.valueOf(deviceCredentials.getCredentialsType().name()));
+                .setCredentialsType(
+                        TransportProtos.CredentialsType.valueOf(deviceCredentials.getCredentialsType().name()));
 
         if (deviceCredentials.getCredentialsValue() != null) {
             builder.setCredentialsValue(deviceCredentials.getCredentialsValue());
@@ -1276,8 +1303,8 @@ public class ProtoUtils {
     }
 
     public static DeviceCredentials fromProto(TransportProtos.DeviceCredentialsProto proto) {
-        DeviceCredentials deviceCredentials =
-                new DeviceCredentials(new DeviceCredentialsId(new UUID(proto.getCredentialsIdMSB(), proto.getCredentialsIdLSB())));
+        DeviceCredentials deviceCredentials = new DeviceCredentials(
+                new DeviceCredentialsId(new UUID(proto.getCredentialsIdMSB(), proto.getCredentialsIdLSB())));
         deviceCredentials.setCreatedTime(proto.getCreatedTime());
         deviceCredentials.setDeviceId(getEntityId(proto.getDeviceIdMSB(), proto.getDeviceIdLSB(), DeviceId::new));
         deviceCredentials.setCredentialsId(proto.getCredentialsId());
@@ -1323,7 +1350,8 @@ public class ProtoUtils {
             builder.setIsGateway(device.getAdditionalInfo().get(GATEWAY_PARAMETER).booleanValue());
         }
 
-        PowerSavingConfiguration psmConfiguration = switch (device.getDeviceData().getTransportConfiguration().getType()) {
+        PowerSavingConfiguration psmConfiguration = switch (device.getDeviceData().getTransportConfiguration()
+                .getType()) {
             case LWM2M -> (Lwm2mDeviceTransportConfiguration) device.getDeviceData().getTransportConfiguration();
             case COAP -> (CoapDeviceTransportConfiguration) device.getDeviceData().getTransportConfiguration();
             default -> null;

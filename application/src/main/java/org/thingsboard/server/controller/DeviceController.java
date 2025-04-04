@@ -784,4 +784,49 @@ public class DeviceController extends BaseController {
         return deviceBulkImportService.processBulkImport(request, user);
     }
 
+    @ApiOperation(value = "Get All Devices (getAllDevices)",
+            notes = "Returns all devices available for the current user. " +
+                    "You can specify parameters to filter the results. " + TENANT_OR_CUSTOMER_AUTHORITY_PARAGRAPH)
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @RequestMapping(value = "/devices/all", method = RequestMethod.GET)
+    @ResponseBody
+    public List<Device> getAllDevices(
+            @Parameter(description = DEVICE_TYPE_DESCRIPTION)
+            @RequestParam(required = false) String type,
+            @Parameter(description = DEVICE_ACTIVE_PARAM_DESCRIPTION)
+            @RequestParam(required = false) Boolean active,
+            @Parameter(description = DEVICE_TEXT_SEARCH_DESCRIPTION)
+            @RequestParam(required = false) String textSearch) throws ThingsboardException {
+        SecurityUser user = getCurrentUser();
+        TenantId tenantId = user.getTenantId();
+        CustomerId customerId = user.getCustomerId();
+        
+        List<Device> devices;
+        if (customerId == null || customerId.isNullUid()) {
+            // User is TENANT_ADMIN, get all tenant devices
+            if (type != null && !type.isEmpty()) {
+                devices = deviceService.findDevicesByTenantIdAndType(tenantId, type, new PageLink(Integer.MAX_VALUE)).getData();
+            } else {
+                devices = deviceService.findDevicesByTenantId(tenantId, new PageLink(Integer.MAX_VALUE)).getData();
+            }
+        } else {
+            // User is CUSTOMER_USER, get all customer devices
+            if (type != null && !type.isEmpty()) {
+                devices = deviceService.findDevicesByTenantIdAndCustomerIdAndType(tenantId, customerId, type, new PageLink(Integer.MAX_VALUE)).getData();
+            } else {
+                devices = deviceService.findDevicesByTenantIdAndCustomerId(tenantId, customerId, new PageLink(Integer.MAX_VALUE)).getData();
+            }
+        }
+
+        // Apply additional filtering
+        return devices.stream()
+                .filter(device -> {
+                    boolean textMatch = textSearch == null || 
+                            device.getName().toLowerCase().contains(textSearch.toLowerCase()) ||
+                            (device.getLabel() != null && device.getLabel().toLowerCase().contains(textSearch.toLowerCase()));
+                    return  textMatch;
+                })
+                .collect(Collectors.toList());
+    }
+
 }
